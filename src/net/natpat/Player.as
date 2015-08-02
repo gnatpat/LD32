@@ -68,6 +68,7 @@ package net.natpat
 		
 		override public function render(buffer:BitmapData):void
 		{
+			super.render(buffer);
 		}
 	}
 

@@ -18,7 +18,7 @@ package net.natpat
 		
 		public static const UPDATES_PER_SECOND:int = 10;
 			
-		public static const RAY_WIDTH:int = 1;
+		public static const RAY_WIDTH:Number = 1;
 		
 		public static const NO_OF_RAYS:Number = 700 / RAY_WIDTH;
 		

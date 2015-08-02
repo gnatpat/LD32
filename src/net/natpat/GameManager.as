@@ -12,6 +12,7 @@ package net.natpat
 	import flash.events.TimerEvent;
 	import flash.filters.GlowFilter;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.drm.DRMPlaybackTimeWindow;
 	import flash.net.Socket;
@@ -44,7 +45,8 @@ package net.natpat
 		public var bitmap:Bitmap;
 		public static var renderer:BitmapData;
 		public var livingBuffer:BitmapData;
-		
+		public var mapBuffer:BitmapData;
+
 		public var map:Map;
 		public var player:Player;
 		
@@ -52,6 +54,10 @@ package net.natpat
 		
 		public var inGame:Boolean = false;
 		public var id:int;
+		
+		private var fpsUpdateTime:Number = 0;
+		private var frames:int = 0;
+		public var fpsText:Text = new Text(700 - 50, 10, "", 30, true, 0xffffff)
 		
 		public function GameManager(stageWidth:int, stageHeight:int) 
 		{
@@ -67,6 +73,7 @@ package net.natpat
 			GuiManager.add(serverText);
 			serverText.text = "Connecting...";
 			players = new Vector.<NetworkLiving>();
+			GuiManager.add(fpsText);
 			
 			//Attempt to connect to our node server...
 			socket.addEventListener(Event.CONNECT, connected);
@@ -77,6 +84,8 @@ package net.natpat
 			
 			//map = new Map(40, 40);
 			livingBuffer = new BitmapData(GC.MAP_SIZE * Cell.SIZE, GC.MAP_SIZE * Cell.SIZE, true, 0);
+			mapBuffer = new BitmapData(GC.MAP_SIZE * Cell.SIZE, GC.MAP_SIZE * Cell.SIZE, true, 0);
+			
 		}
 		
 		public function startGame(map:Map):void
@@ -169,9 +178,20 @@ package net.natpat
 		
 		public function render():void
 		{	
+			if (inGame)
+			{
+				livingBuffer.fillRect(livingBuffer.rect, 0);
+				player.render(livingBuffer);
+				for each(var np:NetworkLiving in players)
+				{
+					np.render(livingBuffer);
+				}
+			}
+			
 			renderer.lock();
 			
-			renderer.fillRect(renderer.rect, 0xffffffff);
+			renderer.fillRect(new Rectangle(0, 0, GC.SCREEN_WIDTH / 2, GC.SCREEN_HEIGHT / 2), 0x9999ff);
+			renderer.fillRect(new Rectangle(0, GC.SCREEN_HEIGHT / 2, GC.SCREEN_WIDTH / 2, GC.SCREEN_HEIGHT / 2), 0x339933);
 			
 			if (inGame)
 			{
@@ -191,14 +211,15 @@ package net.natpat
 					var y:Number = player.getPos().y;
 					
 					var wallFound:Boolean = false;
+					var sideHit:int = 0;
 					while (dist < GC.RAY_LENGTH)
 					{
 						var nextX:Number;
 						if (xStep < 0) nextX = Math.floor((x - 0.000001) / Cell.SIZE) * Cell.SIZE;
-						else 		   nextX = Math.ceil((x + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
+						else 		   nextX = Math.floor((x + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
 						var nextY:Number;
 						if (yStep < 0) nextY = Math.floor((y - 0.000001) / Cell.SIZE) * Cell.SIZE;
-						else 		   nextY = Math.ceil((y + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
+						else 		   nextY = Math.floor((y + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
 						
 						var dx:Number = nextX - x;
 						var dy:Number = nextY - y;
@@ -216,6 +237,8 @@ package net.natpat
 							cellY = Math.floor(y / Cell.SIZE);
 							
 							if (xStep < 0) cellX -= 1;
+							
+							sideHit = (xStep < 0 ? 0 : 2);
 						}
 						else
 						{
@@ -228,6 +251,8 @@ package net.natpat
 							cellY = Math.floor(y / Cell.SIZE);
 							
 							if (yStep < 0) cellY -= 1;
+							
+							sideHit = (yStep < 0 ? 3 : 1);
 						}
 						
 						if (map.getCell(cellX, cellY) == Cell.WALL)
@@ -239,10 +264,20 @@ package net.natpat
 					
 					if (wallFound)
 					{
-						var wallHeight:Number = ((GC.RAY_LENGTH - dist) / GC.RAY_LENGTH) * GC.SCREEN_HEIGHT * Math.cos(getAngleFromRay(ray) * GV.RAD);
-						renderer.fillRect(new Rectangle(xRenderPos, (GC.SCREEN_HEIGHT - wallHeight) / 2, GC.RAY_WIDTH, wallHeight), 0x000000);
+						var drawDist = dist * Math.cos(getAngleFromRay(ray) * GV.RAD);
+						var wallHeight:Number = GC.SCREEN_HEIGHT * 40 / drawDist;
+						var colour:uint = 0x111111 * sideHit + 0x222222;
+						renderer.fillRect(new Rectangle(xRenderPos, (GC.SCREEN_HEIGHT - wallHeight) / 2, GC.RAY_WIDTH, wallHeight), colour);
 					}
 				}
+				
+				var m:Matrix = new Matrix();
+				m.translate(int(GC.SCREEN_WIDTH / 2 - player.getPos().x), int(GC.SCREEN_HEIGHT / 2 - player.getPos().y));
+				mapBuffer.draw(map.getBottomBuffer(), m, null, null, null, false);
+				mapBuffer.draw(livingBuffer, m);
+				mapBuffer.draw(map.getTopBuffer(), m, null, null, null, false);
+				
+				renderer.copyPixels(mapBuffer, new Rectangle(GC.SCREEN_WIDTH/4, 0, GC.SCREEN_WIDTH/2, GC.SCREEN_HEIGHT), new Point(GC.SCREEN_WIDTH/2, 0));
 			}
 			
 			GuiManager.render();
@@ -269,6 +304,15 @@ package net.natpat
 			}
 			
 			Input.update();
+			
+			fpsUpdateTime += GV.elapsed;
+			frames++;
+			if (fpsUpdateTime > 1)
+			{
+				fpsUpdateTime -= 1;
+				fpsText.text = frames + "fps";
+				frames = 0;
+			}
 		}
 		
 		private function getPlayerByID(id:int):NetworkLiving

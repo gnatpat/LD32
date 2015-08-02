@@ -30,8 +30,7 @@ package net.natpat
 		{
 			if (this == WALL)
 			{
-				bottomBuffer.fillRect(new Rectangle(x * SIZE, y * SIZE + SIZE * 0.2, SIZE, SIZE * 0.8), 0xffaaaaaa);
-				topBuffer.fillRect(new Rectangle(x * SIZE, y * SIZE - SIZE * 0.8, SIZE, SIZE), 0xff000000);
+				bottomBuffer.fillRect(new Rectangle(x * SIZE, y * SIZE, SIZE, SIZE), 0xff000000);
 			}
 			else
 				bottomBuffer.fillRect(new Rectangle(x * SIZE, y * SIZE, SIZE, SIZE), 0xffffffff);

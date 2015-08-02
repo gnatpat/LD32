@@ -3,6 +3,7 @@ package net.natpat
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.InteractiveObject;
 	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -167,33 +168,91 @@ package net.natpat
 		}
 		
 		public function render():void
-		{
+		{	
+			renderer.lock();
+			
+			renderer.fillRect(renderer.rect, 0xffffffff);
+			
 			if (inGame)
 			{
-				livingBuffer.fillRect(livingBuffer.rect, 0);
-				player.render(livingBuffer);
-				for each(var np:NetworkLiving in players)
+				for (var ray:int = 0; ray < GC.NO_OF_RAYS; ray++)
 				{
-					np.render(livingBuffer);
+					var xRenderPos:int = ray * GC.RAY_WIDTH;
+					var degAngle:Number = getAngleFromRay(ray) + player.getAngle();
+					var angle:Number = degAngle * GV.RAD;
+					var xStep:Number = Math.cos(angle);
+					var yStep:Number = Math.sin(angle);
+					
+					if (xStep == 0) xStep = 0.0000001;
+					if (yStep == 0) yStep = 0.0000001;
+					
+					var dist:Number = 0;
+					var x:Number = player.getPos().x;
+					var y:Number = player.getPos().y;
+					
+					var wallFound:Boolean = false;
+					while (dist < GC.RAY_LENGTH)
+					{
+						var nextX:Number;
+						if (xStep < 0) nextX = Math.floor((x - 0.000001) / Cell.SIZE) * Cell.SIZE;
+						else 		   nextX = Math.ceil((x + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
+						var nextY:Number;
+						if (yStep < 0) nextY = Math.floor((y - 0.000001) / Cell.SIZE) * Cell.SIZE;
+						else 		   nextY = Math.ceil((y + Cell.SIZE) / Cell.SIZE) * Cell.SIZE;
+						
+						var dx:Number = nextX - x;
+						var dy:Number = nextY - y;
+						
+						var cellX:int, cellY:int;
+						
+						if (dx / xStep < dy / yStep)
+						{
+							var stepLength:Number = dx / xStep;
+							dist += stepLength;
+							x = nextX;
+							y += stepLength * yStep;
+							
+							cellX = Math.floor(x / Cell.SIZE);
+							cellY = Math.floor(y / Cell.SIZE);
+							
+							if (xStep < 0) cellX -= 1;
+						}
+						else
+						{
+							var stepLength:Number = dy / yStep;
+							dist += stepLength;
+							y = nextY;
+							x += stepLength * xStep;
+							
+							cellX = Math.floor(x / Cell.SIZE);
+							cellY = Math.floor(y / Cell.SIZE);
+							
+							if (yStep < 0) cellY -= 1;
+						}
+						
+						if (map.getCell(cellX, cellY) == Cell.WALL)
+						{
+							wallFound = true;
+							break;
+						}
+					}
+					
+					if (wallFound)
+					{
+						var wallHeight:Number = ((GC.RAY_LENGTH - dist) / GC.RAY_LENGTH) * GC.SCREEN_HEIGHT;
+						renderer.fillRect(new Rectangle(xRenderPos, (GC.SCREEN_HEIGHT - wallHeight) / 2, GC.RAY_WIDTH, wallHeight), 0x000000);
+					}
 				}
 			}
 			
-			renderer.lock();
-			
-			//Render the background
-			renderer.fillRect(new Rectangle(0, 0, renderer.width, renderer.height), 0x000000);
-			
-			if (inGame)
-			{
-				var m:Matrix = new Matrix();
-				m.translate(int(GC.SCREEN_WIDTH / 2 - player.getPos().x), int(GC.SCREEN_HEIGHT / 2 - player.getPos().y));
-				renderer.draw(map.getBottomBuffer(), m, null, null, null, false);
-				renderer.draw(livingBuffer, m);
-				renderer.draw(map.getTopBuffer(), m, null, null, null, false);
-			}
 			GuiManager.render();
 			
 			renderer.unlock();
+		}
+		
+		private function getAngleFromRay(ray:int):Number
+		{
+			return (((ray / GC.NO_OF_RAYS) * 2 - 1) * -GC.FOV);
 		}
 		
 		public function update():void

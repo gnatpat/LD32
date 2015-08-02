@@ -12,6 +12,7 @@ package net.natpat
 		private var dir:Point = new Point;
 		
 		private var angle:Number = 0;
+		private var rotSpeed:Number = 180;
 		
 		public function Player(map:Map) 
 		{
@@ -20,25 +21,30 @@ package net.natpat
 		
 		public function update():void
 		{
-			dir.x = 0;
-			dir.y = 0;
-			if (Input.keyDown(Key.W))
-			{
-				dir.y -= 1;
-			}
-			if (Input.keyDown(Key.S))
-			{
-				dir.y += 1;
-			}
 			if (Input.keyDown(Key.A))
 			{
-				dir.x -= 1;
+				angle += rotSpeed * GV.elapsed;
 			}
 			if (Input.keyDown(Key.D))
 			{
-				dir.x += 1;
+				angle -= rotSpeed * GV.elapsed;
+			}
+			
+			dir.x = 0;
+			dir.y = 0;
+			var radAngle = angle * GV.RAD;
+			if (Input.keyDown(Key.W))
+			{
+				dir.x += Math.cos(radAngle);
+				dir.y += Math.sin(radAngle);
+			}
+			if (Input.keyDown(Key.S))
+			{
+				dir.x -= Math.cos(radAngle);
+				dir.y -= Math.sin(radAngle);
 			}
 			dir.normalize(speed * GV.elapsed);
+			
 			if (!dir.equals(GC.ZERO))
 			{
 				needToUpdate = true;
@@ -53,12 +59,15 @@ package net.natpat
 					y += dir.y * -0.1;
 				}
 			}
-			angle += 180 * GV.elapsed;
+		}
+		
+		public function getAngle():Number
+		{
+			return angle;
 		}
 		
 		override public function render(buffer:BitmapData):void
 		{
-			super.render(buffer);
 		}
 	}
 

@@ -47,6 +47,11 @@ package net.natpat
 			return true;
 		}
 		
+		public function updatePosOnMap():void
+		{
+			map.setObjPos(this, x, y);
+		}
+		
 		public function render(buffer:BitmapData):void
 		{
 			buffer.fillRect(new Rectangle(x - size / 2, y - size, size, size * 3/2), 0xffff0000);

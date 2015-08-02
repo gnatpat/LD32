@@ -14,6 +14,7 @@ package net.natpat
 		private var height:int;
 		
 		private var data:Array;
+		private var entityData:Array;
 		private var topBuffer:BitmapData;
 		private var bottomBuffer:BitmapData;
 		
@@ -31,18 +32,28 @@ package net.natpat
 		private function setUpData():void
 		{
 			data = new Array(width);
+			entityData = new Array(width);
 			for (var x:int = 0; x < width; x++)
 			{
 				data[x] = new Array(height);
+				entityData[x] = new Array(height);
 				for (var y:int = 0; y < height; y++)
+				{
 					data[x][y] = Cell.WALL;
+					entityData[x][y] = new Vector.<Living>();
+				}
 			}
 		}
+	
+		public function setObjPos(obj:Living, x:Number, y:Number):void
+		{
+			
+		}
 		
-		var ROOM_VARIANCE:int = 5;
-		var ROOM_SIZE:int = 3;
-		var CORRIDOR_LENGTH = 2;
-		var CORRIDOR_VARIANCE = 4;
+		private var ROOM_VARIANCE:int = 5;
+		private var ROOM_SIZE:int = 3;
+		private var CORRIDOR_LENGTH = 2;
+		private var CORRIDOR_VARIANCE = 4;
 		private function generateMap(seed:int):void
 		{
 			this.seed = seed;

@@ -239,7 +239,7 @@ package net.natpat
 					
 					if (wallFound)
 					{
-						var wallHeight:Number = ((GC.RAY_LENGTH - dist) / GC.RAY_LENGTH) * GC.SCREEN_HEIGHT;
+						var wallHeight:Number = ((GC.RAY_LENGTH - dist) / GC.RAY_LENGTH) * GC.SCREEN_HEIGHT * Math.cos(getAngleFromRay(ray) * GV.RAD);
 						renderer.fillRect(new Rectangle(xRenderPos, (GC.SCREEN_HEIGHT - wallHeight) / 2, GC.RAY_WIDTH, wallHeight), 0x000000);
 					}
 				}

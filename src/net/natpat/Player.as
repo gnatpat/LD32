@@ -11,14 +11,11 @@ package net.natpat
 	{
 		private var dir:Point = new Point;
 		
-		private var sword:Sword;
-		
 		private var angle:Number = 0;
 		
 		public function Player(map:Map) 
 		{
 			super(map);
-			sword = new Sword(this);
 		}
 		
 		public function update():void
@@ -57,14 +54,11 @@ package net.natpat
 				}
 			}
 			angle += 180 * GV.elapsed;
-			sword.moveToAngle(angle);
-			sword.update();
 		}
 		
 		override public function render(buffer:BitmapData):void
 		{
 			super.render(buffer);
-			sword.render(buffer);
 		}
 	}
 

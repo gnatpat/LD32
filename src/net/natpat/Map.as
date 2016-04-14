@@ -52,8 +52,8 @@ package net.natpat
 		
 		private var ROOM_VARIANCE:int = 5;
 		private var ROOM_SIZE:int = 3;
-		private var CORRIDOR_LENGTH = 2;
-		private var CORRIDOR_VARIANCE = 4;
+		private var CORRIDOR_LENGTH:int = 2;
+		private var CORRIDOR_VARIANCE:int = 4;
 		private function generateMap(seed:int):void
 		{
 			this.seed = seed;
@@ -65,19 +65,19 @@ package net.natpat
 			var size:int = ROOM_SIZE + ROOM_VARIANCE + 1;
 			rooms.push(clearRoom((width - size)/2, (height - size) / 2, size, size));
 			
-			var attempts = 0;
+			var attempts:int = 0;
 			
 			while (attempts < 100)
 			{
 				attempts++;
 				var type:Number = random();
+				var edge:Edge, x:int, y:int, width:int, height:int;;
 				if (type < 0.6)
 				{
 					//Try placing a room
-					var edge:Edge = getEdge(rooms);
-					var width:int = random() * ROOM_VARIANCE + ROOM_SIZE;
-					var height:int = random() * ROOM_VARIANCE + ROOM_SIZE;
-					var x:int, y:int;
+					edge = getEdge(rooms);
+					width = random() * ROOM_VARIANCE + ROOM_SIZE;
+					height = random() * ROOM_VARIANCE + ROOM_SIZE;
 					switch(edge.dir) {
 						case 0:
 							x = edge.x - width;
@@ -105,8 +105,7 @@ package net.natpat
 				}
 				else
 				{
-					var edge:Edge = getEdge(rooms);
-					var x:int, y:int, width:int, height:int;
+					edge = getEdge(rooms);
 					var length:int = random() * CORRIDOR_VARIANCE + CORRIDOR_LENGTH;
 					switch(edge.dir) {
 						case 0:

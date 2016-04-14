@@ -32,7 +32,7 @@ package net.natpat
 			
 			dir.x = 0;
 			dir.y = 0;
-			var radAngle = angle * GV.RAD;
+			var radAngle:Number = angle * GV.RAD;
 			if (Input.keyDown(Key.W))
 			{
 				dir.x += Math.cos(radAngle);

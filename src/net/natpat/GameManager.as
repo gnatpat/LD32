@@ -132,7 +132,7 @@ package net.natpat
 						
 					case "M":
 						trace("Got a map!");
-						var newMap:Map = Map.fromNetworkString(values);
+						newMap = Map.fromNetworkString(values);
 						startGame(newMap);
 						break;
 					
@@ -143,7 +143,7 @@ package net.natpat
 					
 					case "N":
 						var id_:int = int(values);
-						var newPlayer = new NetworkLiving(map, id_);
+						newPlayer = new NetworkLiving(map, id_);
 						players.push(newPlayer);
 						break;
 						
@@ -158,7 +158,7 @@ package net.natpat
 						break;
 						
 					case "L":
-						var np:NetworkLiving = getPlayerByID(int(values));
+						np = getPlayerByID(int(values));
 						if (np != null)
 							players.splice(players.indexOf(np), 1);
 						break;
@@ -226,9 +226,10 @@ package net.natpat
 						
 						var cellX:int, cellY:int;
 						
+						var stepLength:Number;
 						if (dx / xStep < dy / yStep)
 						{
-							var stepLength:Number = dx / xStep;
+							stepLength = dx / xStep;
 							dist += stepLength;
 							x = nextX;
 							y += stepLength * yStep;
@@ -242,7 +243,7 @@ package net.natpat
 						}
 						else
 						{
-							var stepLength:Number = dy / yStep;
+							stepLength = dy / yStep;
 							dist += stepLength;
 							y = nextY;
 							x += stepLength * xStep;
@@ -264,7 +265,7 @@ package net.natpat
 					
 					if (wallFound)
 					{
-						var drawDist = dist * Math.cos(getAngleFromRay(ray) * GV.RAD);
+						var drawDist:Number = dist * Math.cos(getAngleFromRay(ray) * GV.RAD);
 						var wallHeight:Number = GC.SCREEN_HEIGHT * 40 / drawDist;
 						var colour:uint = 0x111111 * sideHit + 0x222222;
 						renderer.fillRect(new Rectangle(xRenderPos, (GC.SCREEN_HEIGHT - wallHeight) / 2, GC.RAY_WIDTH, wallHeight), colour);
